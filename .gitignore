@@ -1,0 +1,7 @@
+# Used when creating a release:
+/docker
+/docker.zip
+
+# I store off old releases named by date, starting with the year... this should cover those:
+/20*/
+

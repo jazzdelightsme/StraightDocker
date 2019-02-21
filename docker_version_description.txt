@@ -1,0 +1,8 @@
+This version of the daemon (dockerd.exe) and client (docker.exe) were downloaded from https://master.dockerproject.org/, and had a timestamp of 2019-02-15T00:01:56+00:00 (2019-02-14 4:01 PM PST). The "commit" listed was fcb2868: 
+
+https://github.com/moby/moby/commit/fcb2868
+
+(circa 2019/02/15)
+
+The wincred helper (docker-credential-wincred.exe) is from: https://github.com/docker/docker-credential-helpers/releases/download/v0.6.0/docker-credential-wincred-v0.6.0-amd64.zip
+
