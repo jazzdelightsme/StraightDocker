@@ -45,10 +45,11 @@ Expand-Archive .\straightDockerRepo.zip
 
 (You don't need to be elevated.)
 
-In a nutshell: it will download this repo, expand it, then run the setup.ps1 script, which
-will ask a couple of questions, then launch an elevated window to enable windows features,
-copy an LCOW kernel to ProgramFiles, and put the docker EXEs in C:\docker, and then start
-the docker daemon (if you already have the required features enabled; if not, you'll have
-to reboot first). If you are running Windows PowerShell instead of PowerShell core (pwsh),
-then you will also have to allow some prompts to install the ThreadJob module.
+In a nutshell: it will download this repo, expand it, then run the `setup.ps1` script from
+the `sampleScripts` directory, which will ask a couple of questions, then launch an
+elevated window to enable windows features, copy an LCOW kernel to ProgramFiles, and put
+the docker EXEs in `C:\docker`, and then start the docker daemon (if you already have the
+required features enabled; if not, you'll have to reboot first). If you are running
+Windows PowerShell instead of PowerShell core (pwsh), then you will also have to allow
+some prompts to install the ThreadJob module.
 
