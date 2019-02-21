@@ -19,6 +19,19 @@ try
         throw "The -Version parameter should look like x.y.z+YYYYMMDD."
     }
 
+    $choiceIdx = $Host.UI.PromptForChoice(
+            "Have you updated the sample scripts?", # caption
+            "You should update the URL in the sample setup scripts (in SetupDockerEnvironment_AdminStuff.ps1) to download the release that you are about to create. Have you done that?",
+            @( [System.Management.Automation.Host.ChoiceDescription]::new( 'Y' )
+               [System.Management.Automation.Host.ChoiceDescription]::new( 'n' ) ),
+            0 ) # default ("Y")
+
+    if( $choiceIdx -ne 0 )
+    {
+        Write-Host "Well... go do that, then." -Fore Yellow
+        return
+    }
+
     $destDir = "$PSScriptRoot\..\docker"
 
     if( !(Test-Path "$destDir\docker.exe") -or
