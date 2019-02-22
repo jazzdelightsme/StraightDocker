@@ -19,8 +19,20 @@ I use the term "straight Docker" to differentiate between "Docker for Windows" (
 which is a closed-source product made by Docker, Inc; and the open-source components from
 the Moby project ("straight Docker") which D4W builds upon.
 
+## Sample scripts to "install" it
+
 There are some sample scripts in the `sampleScripts` directory that demonstrate how to
-install the "straight docker" binaries.
+install the "straight docker" binaries: it's mostly just "xcopy", but there are a few
+pieces:
+ 1. Copy docker binaries into `C:\docker`.
+ 2. Copy LCOW kernel-related binaries (downloaded from
+    [linuxkit/lcow](https://github.com/linuxkit/lcow)) into `C:\Program Files\Linux
+    Containers`.
+ 3. Enable container-related Windows features (like Hyper-V).
+
+It's basically just a bit more automation over the top of the steps described on the
+[linuxkit/lcow readme](https://github.com/linuxkit/lcow/blob/master/README.md), plus a
+stable download instead of "download last night's build".
 
 **Note** that the scripts are not intended to be "production ready"; they are a sample
 that you can incorporate or build upon. There are plenty of things that are not handled;
@@ -32,7 +44,8 @@ for instance
    decide if your version of Windows is recent enough);
  * etc.
 
-Also **note** that they will enable Hyper-V and container-related features of Windows.
+Also **note** again that they will enable Hyper-V and container-related features of
+Windows, which may require a reboot (it should tell you if it needs it).
 
 If you just want to try it out real quick, these commands should work (powershell):
 
@@ -49,7 +62,35 @@ In a nutshell: it will download this repo, expand it, then run the `setup.ps1` s
 the `sampleScripts` directory, which will ask a couple of questions, then launch an
 elevated window to enable windows features, copy an LCOW kernel to ProgramFiles, and put
 the docker EXEs in `C:\docker`, and then start the docker daemon (if you already have the
-required features enabled; if not, you'll have to reboot first). If you are running
-Windows PowerShell instead of PowerShell core (pwsh), then you will also have to allow
-some prompts to install the ThreadJob module.
+required features enabled; if not, you'll have to reboot first and then run the script
+again). If you are running Windows PowerShell instead of PowerShell core (pwsh), then you
+will also have to allow some prompts to install the ThreadJob module.
+
+## Should I use this?
+
+"Straight docker" is based on experimental components that are under active development.
+
+Take a look at the "Moby is recommended" versus "Moby is NOT recommended" section of
+https://mobyproject.org, and just substitute the phrase "straight docker" in place of
+"Moby":
+
+> **Straight docker** is recommended for [...]
+>  * Hackers who want to customize or patch their Docker build
+>  * System engineers or integrators building a container system
+>  * Container enthusiasts who want to experiment with the latest container tech
+>  * etc. ...
+
+> **Straight docker** is **NOT** recommended for [...]
+>  * Application developers looking for an easy way to run their applications in
+>    containers. We recommend Docker CE instead.
+>  * Enterprise IT and development teams looking for a ready-to-use, commercially
+>    supported container platform. We recommend Docker EE instead.
+>  * Anyone curious about containers and looking for an easy way to learn. We recommend
+>    the docker.com website instead.
+
+In particular, note that there is no additional testing, QA, validation, etc. that is done
+to these binaries other than what happens as part of the Moby nightly build/release
+process, other than the fact that I personally got the binaries to run on my machine. And
+there's no support other than "go file an issue on the moby project". If you are okay with
+that... have fun!
 
