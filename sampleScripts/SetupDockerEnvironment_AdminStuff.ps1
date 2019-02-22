@@ -181,7 +181,7 @@ try
         {
             try
             {
-                $url = 'https://github.com/linuxkit/lcow/releases/download/4.14.29-0aea33bc/release.zip'
+                $url = 'https://github.com/linuxkit/lcow/releases/download/v4.14.35-v0.3.9/release.zip'
 
                 $zipPath = Join-Path $DownloadsDir 'LcowKernelBinaries.zip'
                 Write-Host "Downloading LCOW binaries to: $zipPath" -Fore Cyan
@@ -193,13 +193,16 @@ try
                     throw "Failed to download LCOW kernel binaries."
                 }
 
+                $expectedHash = '9d929afe79b4abd96ffa00841ed0b2178402f773bc85d4f177cdeb339afe44df'
+                $hash = (Get-FileHash -Algorith sha256 $zipPath).Hash
+
+                if( $hash -ne $expectedHash )
+                {
+                    throw "Whoa; file hash does not match?! ($hash versus $expectedHash)"
+                }
+
                 Write-Host "Expanding to: $LCoW_KernelDir" -Fore Cyan
                 Expand-Archive $zipPath $LCoW_KernelDir -ErrorAction Stop
-
-                # This is a historical wart thing.
-                $oldName = Join-Path $LCoW_KernelDir 'bootx64.efi'
-                $newName = Join-Path $LCoW_KernelDir 'kernel'
-                Move-Item $oldName $newName -ErrorAction Stop
             }
             finally { }
         }
