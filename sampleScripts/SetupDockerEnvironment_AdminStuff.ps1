@@ -411,7 +411,7 @@ try
 
     # We want to signal the OkEvent when the daemon comes up. To do that, we'll start a
     # background job that tries to connect to the pipe that docker listens on.
-    # 
+    #
     # PowerShell Core (pwsh) comes with Start-ThreadJob... but Windows Powershell does not.
 
     if( !(Get-Command Start-ThreadJob -ErrorAction Ignore) )
