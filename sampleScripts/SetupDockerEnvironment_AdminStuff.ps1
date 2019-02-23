@@ -337,6 +337,75 @@ try
     } # end Invoke-DevEnvironmentCheck
 
 
+    # based on tools/install-powershell.ps1 from the PowerShell repo
+    function AddToPath
+    {
+        [CmdletBinding()]
+        param( [Parameter( Mandatory = $true )]
+               [string] $Path,
+
+               [Parameter( Mandatory = $false )]
+               [ValidateSet([System.EnvironmentVariableTarget]::User, [System.EnvironmentVariableTarget]::Machine)]
+               [System.EnvironmentVariableTarget] $Target = ([System.EnvironmentVariableTarget]::User)
+             )
+
+        $rwSubtree = [Microsoft.Win32.RegistryKeyPermissionCheck]::ReadWriteSubTree
+
+        if ($Target -eq [System.EnvironmentVariableTarget]::User)
+        {
+            [Microsoft.Win32.RegistryKey] $baseKey = [Microsoft.Win32.Registry]::CurrentUser
+            [string] $Environment = 'Environment'
+        }
+        else
+        {
+            [Microsoft.Win32.RegistryKey] $baseKey = [Microsoft.Win32.Registry]::LocalMachine
+            [string] $Environment = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+        }
+
+        [Microsoft.Win32.RegistryKey] $key = $baseKey.OpenSubKey( $Environment, $rwSubtree )
+
+        # $key is null here if it the user was unable to get ReadWriteSubTree access.
+        if( $null -eq $key )
+        {
+            throw [System.Security.SecurityException]::new( "Unable to access the target registry" )
+        }
+
+        # Get current UNEXPANDED value
+        [string] $curVal = $key.GetValue( 'PATH',
+                                          '', # defaultValue
+                                          [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames )
+
+        # Keep current value kind if possible/appropriate
+        try
+        {
+            [Microsoft.Win32.RegistryValueKind] $pathValKind = $key.GetValueKind( 'PATH' )
+        }
+        catch
+        {
+            [Microsoft.Win32.RegistryValueKind] $pathValKind = [Microsoft.Win32.RegistryValueKind]::ExpandString
+        }
+
+        $newVal = [string]::Concat( $curVal.TrimEnd( [System.IO.Path]::PathSeparator ),
+                                    [System.IO.Path]::PathSeparator,
+                                    $Path )
+
+        # Upgrade pathValKind to [Microsoft.Win32.RegistryValueKind]::ExpandString if appropriate
+        if( $newVal.Contains( '%' ) )
+        {
+            $pathValKind = [Microsoft.Win32.RegistryValueKind]::ExpandString
+        }
+
+        $key.SetValue( 'PATH', $newVal, $pathValKind )
+
+        # I'm too lazy to write the proper code to broadcast a WM_SETTINGCHANGE; instead
+        # I'll [ab]use setx to do it for me by setting a random variable (and then
+        # immediately deleting it).
+        $randomEnvVarName = [guid]::NewGuid().ToString()
+        setx $randomEnvVarName $randomEnvVarName
+        [Environment]::SetEnvironmentVariable( $randomEnvVarName, $null, 'User' )
+    } # end AddToPath()
+
+
     $Checks = @(
         @{
             TestDescription = "Does docker exist at ${DockerInstallDir}?"
@@ -371,10 +440,10 @@ try
                 # It could already be in the PATH, even if we just downloaded it.
                 if( !($untouchedPath.Split( ';' ) -contains $DockerInstallDir) )
                 {
-                    $newPath = $DockerInstallDir + ";" + $untouchedPath
-                    [System.Environment]::SetEnvironmentVariable( 'PATH',
-                                                                  $newPath,
-                                                                  [System.EnvironmentVariableTarget]::User )
+                    # Note that we use the AddToPath helper function, which takes care not
+                    # to mess up embedded environment variable references (i.e. it is /
+                    # should be a REG_EXPAND_SZ, and we don't want to change that).
+                    AddToPath $DockerInstallDir
                 }
             } # end Fix
         }
